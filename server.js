@@ -3,7 +3,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cors from "cors";
 import dotenv from "dotenv";
-import userRoutes from "./routes/userRoutes.js"; // ✅ Import user routes
+import userRoutes from "./routes/userRoutes.js";
 import sequelize from "./config/db.js";
 
 dotenv.config();
@@ -16,7 +16,10 @@ app.use(cors({ origin: "http://localhost:5173" }));
 app.use(helmet());
 app.use(morgan("dev"));
 
-app.use("/api/users", userRoutes); // ✅ Mount the routes
+// Serve static files from "uploads" folder
+app.use("/uploads", express.static("uploads"));
+
+app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Connectify API");

@@ -1,10 +1,8 @@
-// backend/controllers/userController.js
-import PostEntry from "../model/postModel.js"; // ✅ Correct import
+import PostEntry from "../model/postModel.js"; 
 import User from "../model/userModel.js";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 
-// Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: "uploads/",
   filename: (req, file, cb) => {
@@ -14,7 +12,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// ✅ Register User Function (No changes needed)
 export const registerUser = async (req, res) => {
   try {
     const { fullName, username, email, password } = req.body;
@@ -50,7 +47,6 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// ✅ Login User Function (No changes needed)
 export const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -83,11 +79,10 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// ✅ Create Post Function (Fixed)
 export const createPost = async (req, res) => {
   try {
     const { content, userId } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : null; 
+    const image = req.file ? `uploads/${req.file.filename}` : null; // Fixed syntax here
 
     console.log("Received post data:", { content, userId, image });
 
@@ -105,11 +100,10 @@ export const createPost = async (req, res) => {
       post: { id: post.id, userId, content, imageUrl: post.imageUrl },
     });
   } catch (error) {
-    console.error("Post creation error:", error);  // 👈 This will print the real issue
+    console.error("Post creation error:", error);
     res.status(500).json({ message: "Server error creating post", error: error.message });
   }
 };
-
 
 // Export multer upload function so it can be used in routes
 export { upload };
