@@ -1,5 +1,6 @@
 // backend/controllers/userController.js
-import User from "../model/userModel.js"; // Corrected path
+import User from "../model/userModel.js"; // Updated to singular 'model'
+import PostEntry from "../model/postModel.js"; // Updated to singular 'model'
 import bcrypt from "bcryptjs";
 
 export const registerUser = async (req, res) => {
@@ -9,31 +10,23 @@ export const registerUser = async (req, res) => {
     if (!fullName || !username || !email || !password) {
       return res.status(400).json({ message: "Please enter all fields" });
     }
-
     const existingEmail = await User.findOne({ where: { email } });
     if (existingEmail) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "User with this email already exists" });
     }
-
     const existingUsername = await User.findOne({ where: { username } });
     if (existingUsername) {
-      return res.status(400).json({ message: "Username already exists" });
+      return res.status(400).json({ message: "Username already taken" });
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({ fullName, username, email, password: hashedPassword });
     res.status(201).json({
       success: true,
-      user: {
-        id: newUser.id,
-        fullName: newUser.fullName,
-        username: newUser.username,
-        email: newUser.email,
-      },
+      user: { id: newUser.id, fullName, username, email },
     });
   } catch (error) {
     console.error("Registration error:", error.message, error.stack);
-    res.status(500).json({ message: "Server error during registration" });
+    res.status(500).json({ message: "Server error during registration", error: error.message });
   }
 };
 
@@ -44,28 +37,22 @@ export const loginUser = async (req, res) => {
     if (!username || !password) {
       return res.status(400).json({ message: "Please enter the proper username and password" });
     }
-
     const user = await User.findOne({ where: { username } });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
     res.status(200).json({
       success: true,
-      user: {
-        id: user.id,
-        fullName: user.fullName, 
-        username: user.username,
-        email: user.email,
-      },
+      user: { id: user.id, fullName: user.fullName, username: user.username, email: user.email },
     });
   } catch (error) {
     console.error("Login error:", error.message, error.stack);
-    res.status(500).json({ message: "Server error during login" });
+    res.status(500).json({ message: "Server error during login", error: error.message });
   }
 };
+
+
