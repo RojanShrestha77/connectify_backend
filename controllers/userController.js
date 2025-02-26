@@ -1,10 +1,19 @@
-import PostEntry from "../model/postModel.js"; 
+import PostEntry from "../model/postModel.js";
 import User from "../model/userModel.js";
 import bcrypt from "bcryptjs";
 import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const uploadDir = path.join(__dirname, "..", "uploads"); // /web-dev/backend/uploads/
 
 const storage = multer.diskStorage({
-  destination: "uploads/",
+  destination: (req, file, cb) => {
+    cb(null, uploadDir); // Save to backend/uploads/
+  },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
   },
@@ -82,7 +91,7 @@ export const loginUser = async (req, res) => {
 export const createPost = async (req, res) => {
   try {
     const { content, userId } = req.body;
-    const image = req.file ? `uploads/${req.file.filename}` : null; // Fixed syntax here
+    const image = req.file ? `uploads/${req.file.filename}` : null;
 
     console.log("Received post data:", { content, userId, image });
 
@@ -105,5 +114,31 @@ export const createPost = async (req, res) => {
   }
 };
 
-// Export multer upload function so it can be used in routes
+export const getPosts = async (req, res) => {
+  try {
+    const posts = await PostEntry.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["fullName", "username"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+    console.log(
+      "Fetched posts:",
+      posts.map((p) => ({
+        id: p.id,
+        content: p.content,
+        imageUrl: p.imageUrl,
+        user: p.User,
+      }))
+    );
+    res.status(200).json({ success: true, posts });
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    res.status(500).json({ message: "Server error fetching posts", error: error.message });
+  }
+};
+
 export { upload };
