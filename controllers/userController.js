@@ -147,7 +147,14 @@ export const getUserByUsername = async (req, res) => {
 
     const user = await User.findOne({
       where: { username },
-      attributes: ["id", "fullName", "username", "email"], // Include only necessary fields
+      attributes: ["id", "fullName", "username", "email"],
+      include: [
+        {
+          model: PostEntry,
+          attributes: ["id", "content", "imageUrl", "createdAt"],
+          order: [["createdAt", "DESC"]],
+        },
+      ],
     });
 
     if (!user) {
@@ -161,6 +168,7 @@ export const getUserByUsername = async (req, res) => {
         fullName: user.fullName,
         username: user.username,
         email: user.email,
+        posts: user.PostEntries,
       },
     });
   } catch (error) {
