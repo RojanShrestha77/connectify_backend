@@ -8,11 +8,11 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const uploadDir = path.join(__dirname, "..", "uploads"); // /web-dev/backend/uploads/
+const uploadDir = path.join(__dirname, "..", "uploads");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir); // Save to backend/uploads/
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
@@ -78,7 +78,7 @@ export const loginUser = async (req, res) => {
       user: {
         id: user.id,
         fullName: user.fullName,
-        username: user.username,
+        username: user.username, // Include username in the response
         email: user.email,
       },
     });
@@ -141,4 +141,31 @@ export const getPosts = async (req, res) => {
   }
 };
 
-export { upload };
+export const getUserByUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const user = await User.findOne({
+      where: { username },
+      attributes: ["id", "fullName", "username", "email"], // Include only necessary fields
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ message: "Server error fetching user details", error: error.message });
+  }
+};
+export { upload};
